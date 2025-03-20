@@ -43,5 +43,9 @@ repositories:
     type: git
     url: https://github.com/scuar003/RepairInterface.git
     version: main
+  cloud_devel:
+    type: git
+    url: https://github.com/scuar003/cloud_devel.git
+    version: devel
   
   
