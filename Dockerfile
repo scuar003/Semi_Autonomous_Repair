@@ -41,24 +41,16 @@ RUN mkdir -p ${WORKSPACE}libs_ && \
     make && \
     make install
 
-
 # Configure ROS2 comms 
 RUN echo 'export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp' >> ~/.bashrc && \
     echo 'export ROS_DOMAIN_ID=10' >> ~/.bashrc
 
-
-# Determines HOST IP and passes through to the docker
-RUN HOST_IP=$(hostname -I | awk '{print $1}') && \
-    export ROS_IP=${HOST_IP} && \
-    echo "Setting ROS_IP to ${ROS_IP}"
-
-#Edit UR description and rviz config 
+# Edit UR description and rviz config 
 RUN git clone https://github.com/scuar003/UR16_repair_setup.git /tmp/UR16_repair_setup && \
     cp /tmp/UR16_repair_setup/lidar.STL ${WORKSPACE}/src/Universal_Robots_ROS2_Description/meshes/ur16e/visual/ && \
     cp /tmp/UR16_repair_setup/ur.urdf.xacro ${WORKSPACE}/src/Universal_Robots_ROS2_Description/urdf/ur.urdf.xacro && \
     cp /tmp/UR16_repair_setup/view_robot.rviz ${WORKSPACE}/src/Universal_Robots_ROS2_Description/rviz/view_robot.rviz && \
     rm -rf /tmp/UR16_repair_setup
-
 
 # Use rosdep to install any remaining system dependencies and build the workspace
 RUN . /opt/ros/humble/setup.sh && \
@@ -66,11 +58,13 @@ RUN . /opt/ros/humble/setup.sh && \
     rosdep install --rosdistro humble --from-paths src --ignore-src -r -y && \
     colcon build
 
+# Copy the startup script and make it executable
 COPY ur16_app.sh /ur16_app.sh
 RUN chmod +x /ur16_app.sh
 
+# Optional: set a default (empty) ROBOT_IP environment variable.
+# Users should pass the robot IP at runtime.
+ENV ROBOT_IP=""
 
-
-
-# Default command: source the workspace setup and open a bash shell.
-CMD ["./ur16_app.sh"]
+# Default command: launch the startup script.
+ENTRYPOINT ["/ur16_app.sh"]
