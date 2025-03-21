@@ -66,8 +66,11 @@ RUN . /opt/ros/humble/setup.sh && \
     rosdep install --rosdistro humble --from-paths src --ignore-src -r -y && \
     colcon build
 
+COPY ur16_app.sh /ur16_app.sh
+RUN chmod +x /ur16_app.sh
+
 
 
 
 # Default command: source the workspace setup and open a bash shell.
-CMD ["/bin/bash", "-c", ". /opt/ros/humble/setup.bash && . ${WORKSPACE}/install/setup.bash  && exec bash"]
+CMD ["./ur16_app.sh"]
