@@ -3,11 +3,16 @@ FROM ros:humble-ros-base
 # Set ROS_DISTRO and workspace environment variables
 ENV ROS_DISTRO=humble
 ENV WORKSPACE=/home/ur16_ws/
+ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+ENV ROS_DOMAIN_ID=10
 
 # Set working directory
 WORKDIR ${WORKSPACE}
 
-# Install essential system packages
+# Copy the combined repositories file into the container
+COPY combined.repos ${WORKSPACE}/combined.repos
+
+# Install essential system packages and clone repositories
 RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     ros-humble-rviz2 \
@@ -21,15 +26,14 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
     git \
-    libncurses-dev \
-    && rm -rf /var/lib/apt/lists/*
+    libncurses-dev \ 
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p ${WORKSPACE}src \
+    && vcs import ${WORKSPACE}src < ${WORKSPACE}combined.repos
 
-# Copy the combined repositories file into the container
-COPY combined.repos ${WORKSPACE}/combined.repos
-
-# Create the workspace source folder and import repositories
-RUN mkdir -p src && vcs import src < ${WORKSPACE}/combined.repos
-
+RUN pip3 install --upgrade pip && \
+    pip3 install numpy open3d
 # Clone, build, and install the ur_rtde library into ${WORKSPACE}libs_/
 RUN mkdir -p ${WORKSPACE}libs_ && \
     cd ${WORKSPACE}libs_ && \
@@ -41,9 +45,7 @@ RUN mkdir -p ${WORKSPACE}libs_ && \
     make && \
     make install
 
-# Configure ROS2 comms 
-RUN echo 'export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp' >> ~/.bashrc && \
-    echo 'export ROS_DOMAIN_ID=10' >> ~/.bashrc
+
 
 # Edit UR description and rviz config 
 RUN git clone https://github.com/scuar003/UR16_repair_setup.git /tmp/UR16_repair_setup && \
@@ -65,6 +67,7 @@ RUN chmod +x /ur16_app.sh
 # Optional: set a default (empty) ROBOT_IP environment variable.
 # Users should pass the robot IP at runtime.
 ENV ROBOT_IP=""
+
 
 # Default command: launch the startup script.
 ENTRYPOINT ["/ur16_app.sh"]
