@@ -1,12 +1,10 @@
 global:
-  robot_ip: "192.168.56.101"
-
+  robot_ip: 192.168.56.101
 lidar_scan:
   ros__parameters:
-    menu_topic: "menu_action"
-    laser_topic: "/scan"
-
+    laser_topic: /scan
+    menu_topic: menu_action
 ur_control:
   ros__parameters:
-    ur_type: "ur16e"
-    launch_rviz: true
+    launch_rviz: 'True'
+    ur_type: ur16e

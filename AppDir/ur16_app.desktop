@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=UR16 App
+Comment=Launch the UR16 Docker application
+Exec=ur16_app_wrapper.sh
+Icon=ur16_app
+Terminal=true
+Categories=Utility;
