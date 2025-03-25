@@ -9,16 +9,6 @@ source /home/ur16_ws/install/setup.bash
 export ROS_IP=$(hostname -I | awk '{print $1}')
 echo "ROS_IP set to ${ROS_IP}"
 
-# Check if ROBOT_IP is provided as an environment variable.
-if [ -z "$ROBOT_IP" ]; then
-    echo "Error: ROBOT_IP environment variable is not set."
-    echo "Please provide the robot IP when running the container (e.g., docker run -e ROBOT_IP=192.168.56.101 ...)."
-    exit 1
-fi
-
-# Array to keep track of background process PIDs.
-PIDS=()
-
 # Cleanup function to kill all child processes.
 cleanup() {
   echo "Caught termination signal. Shutting down processes..."
@@ -30,14 +20,16 @@ cleanup() {
   exit 0
 }
 
-# Trap SIGINT and SIGTERM signals.
-trap cleanup SIGINT SIGTERM
 
-launch_app (){  
-  echo $RMW_IMPLEMENTATION
-  echo $ROS_DOMAIN_ID
-  sleep 2
-  ros2 launch demo_cpp_ready ur16_launch.py
-}
-# Launch the application.
-launch_app
+# Define the parameter file path.
+PARAM_FILE="/config/params.yaml"
+
+# Check if the external parameter file exists.
+if [ ! -f "$PARAM_FILE" ]; then
+    echo "Error: Parameter file not found at $PARAM_FILE"
+    exit 1
+fi
+echo "Using parameter file: $PARAM_FILE"
+
+# Launch the ROS2 system by passing the parameter file as a launch argument.
+terminator -e "ros2 launch demo_cpp_ready ur16_launch.py params_file:=$PARAM_FILE"

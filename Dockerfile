@@ -28,6 +28,7 @@ RUN apt-get update && apt-get install -y \
     git \
     libncurses-dev \ 
     python3-pip \
+    terminator \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p ${WORKSPACE}src \
     && vcs import ${WORKSPACE}src < ${WORKSPACE}combined.repos
