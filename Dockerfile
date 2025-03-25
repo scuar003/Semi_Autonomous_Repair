@@ -65,10 +65,5 @@ RUN . /opt/ros/humble/setup.sh && \
 COPY ur16_app.sh /ur16_app.sh
 RUN chmod +x /ur16_app.sh
 
-# Optional: set a default (empty) ROBOT_IP environment variable.
-# Users should pass the robot IP at runtime.
-ENV ROBOT_IP=""
-
-
 # Default command: launch the startup script.
 ENTRYPOINT ["/ur16_app.sh"]

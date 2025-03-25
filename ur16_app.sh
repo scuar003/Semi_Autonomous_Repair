@@ -4,6 +4,8 @@ set -e
 # Source ROS2 environment setup files.
 source /opt/ros/humble/setup.bash
 source /home/ur16_ws/install/setup.bash
+echo $RMW_IMPLEMENTATION
+echo $ROS_DOMAIN_ID
 
 # Determine the host IP and set ROS_IP at runtime.
 export ROS_IP=$(hostname -I | awk '{print $1}')
