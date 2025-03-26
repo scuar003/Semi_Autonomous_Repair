@@ -67,7 +67,6 @@ def on_ok():
     try:
         with open(config_file, 'w') as f:
             yaml.dump(config_data, f)
-        messagebox.showinfo("Success", "Parameters updated successfully.")
         editor.destroy()
     except Exception as e:
         messagebox.showerror("Error", f"Error writing YAML:\n{e}")

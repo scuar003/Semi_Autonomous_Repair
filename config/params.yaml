@@ -1,5 +1,6 @@
 global:
   robot_ip: 192.168.56.101
+  teensy: /dev/ttyACM0
 lidar_scan:
   ros__parameters:
     laser_topic: /scan
