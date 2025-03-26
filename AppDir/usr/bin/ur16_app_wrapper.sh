@@ -23,13 +23,11 @@ if [ ! -f "$CONFIG_FILE" ]; then
     fi
 fi
 
-zenity --info --text="Using config file: $CONFIG_FILE"
 CONFIG_DIR=$(dirname "$CONFIG_FILE")
 
 # Launch the GUI parameter editor.
 python3 "$(dirname "$0")/edit_params.py" "$CONFIG_FILE"
 
-zenity --info --text="Launching Docker container with ROBOT_IP=${ROBOT_IP}..."
 
 # Open a new terminal (using Terminator) to run the Docker container.
 # The command below starts Terminator, executes the docker run command, and then keeps the terminal open.
