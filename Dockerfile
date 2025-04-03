@@ -3,8 +3,9 @@ FROM ros:humble-ros-base
 # Set ROS_DISTRO and workspace environment variables
 ENV ROS_DISTRO=humble
 ENV WORKSPACE=/home/ur16_ws/
-ENV RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-ENV ROS_DOMAIN_ID=10
+ENV RMW_IMPLEMENTATION=rmw_zenoh_cpp
+ENV ROS_DOMAIN_ID=27
+ENV ZENOH_ROUTER_CONFIG_URI=/home/ur16_ws/routerconfig.json5
 
 # Set working directory
 WORKDIR ${WORKSPACE}
@@ -16,8 +17,8 @@ COPY combined.repos ${WORKSPACE}/combined.repos
 RUN apt-get update && apt-get install -y \
     python3-colcon-common-extensions \
     ros-humble-rviz2 \
-    ros-humble-rmw-cyclonedds-cpp* \
-    ros-humble-cyclonedds* \
+    ros-humble-rmw-zenoh-cpp* \
+    ros-humble-zenoh* \
     python3-vcstool \
     libboost-all-dev \
     ros-humble-test-msgs \
@@ -53,6 +54,7 @@ RUN git clone https://github.com/scuar003/UR16_repair_setup.git /tmp/UR16_repair
     cp /tmp/UR16_repair_setup/lidar.STL ${WORKSPACE}/src/Universal_Robots_ROS2_Description/meshes/ur16e/visual/ && \
     cp /tmp/UR16_repair_setup/ur.urdf.xacro ${WORKSPACE}/src/Universal_Robots_ROS2_Description/urdf/ur.urdf.xacro && \
     cp /tmp/UR16_repair_setup/view_robot.rviz ${WORKSPACE}/src/Universal_Robots_ROS2_Description/rviz/view_robot.rviz && \
+    cp /tmp/UR16_repair_setup/routerconfig.json5 ${WORKSPACE}/routerconfig.json5 && \
     rm -rf /tmp/UR16_repair_setup
 
 # Use rosdep to install any remaining system dependencies and build the workspace

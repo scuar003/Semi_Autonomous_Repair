@@ -42,10 +42,14 @@ repositories:
   RepairInterface:
     type: git
     url: https://github.com/scuar003/RepairInterface.git
-    version: main
+    version: devel
   cloud_devel:
     type: git
     url: https://github.com/scuar003/cloud_devel.git
     version: devel
+  rmw_zenoh:
+    type: git
+    url: https://github.com/ros2/rmw_zenoh.git
+    version: humble
   
   
