@@ -1,86 +1,94 @@
 #!/usr/bin/env python3
-import tkinter as tk
-from tkinter import messagebox
-import yaml
-import os
 import sys
+import os
+import yaml
+from PyQt5 import QtWidgets, QtCore
 
-# Determine the config file location.
-if len(sys.argv) > 1:
-    config_file = sys.argv[1]
-else:
-    # Fallback: look for a config folder next to the script.
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    config_file = os.path.join(script_dir, "config", "params.yaml")
-
-if not os.path.exists(config_file):
-    messagebox.showerror("Error", f"Config file not found:\n{config_file}")
-    exit(1)
-
-
-# Now load the config file.
-try:
-    with open(config_file, 'r') as f:
-        config_data = yaml.safe_load(f)
-except Exception as e:
-    messagebox.showerror("Error", f"Error reading YAML:\n{e}")
-    exit(1)
-
-# Prepare a list of (key_path, value) tuples.
-fields = []
-
+# Function to traverse the dictionary and get a list of (key_path, value) tuples.
 def traverse_dict(d, path=""):
-    for k, v in d.items():
-        new_path = f"{path}.{k}" if path else k
-        if isinstance(v, dict):
-            traverse_dict(v, new_path)
+    fields = []
+    for key, value in d.items():
+        new_path = f"{path}.{key}" if path else key
+        if isinstance(value, dict):
+            fields.extend(traverse_dict(value, new_path))
         else:
-            fields.append((new_path, v))
+            fields.append((new_path, value))
+    return fields
 
-traverse_dict(config_data)
+class EditParametersDialog(QtWidgets.QDialog):
+    def __init__(self, config_file, config_data, parent=None):
+        super(EditParametersDialog, self).__init__(parent)
+        self.setWindowTitle("Edit Parameters")
+        self.config_file = config_file
+        self.config_data = config_data
 
-# Create the main window for editing.
-editor = tk.Tk()
-editor.title("Edit Parameters")
+        # Create a grid layout for the fields.
+        self.grid_layout = QtWidgets.QGridLayout()
+        self.edit_fields = {}  # key: QLineEdit
 
-entries = {}
-row = 0
+        fields = traverse_dict(config_data)
+        row = 0
+        for key, value in fields:
+            label = QtWidgets.QLabel(key)
+            line_edit = QtWidgets.QLineEdit(str(value))
+            self.grid_layout.addWidget(label, row, 0)
+            self.grid_layout.addWidget(line_edit, row, 1)
+            self.edit_fields[key] = line_edit
+            row += 1
 
-for key, value in fields:
-    lbl = tk.Label(editor, text=key)
-    lbl.grid(row=row, column=0, padx=5, pady=5, sticky="e")
-    entry = tk.Entry(editor, width=40)
-    entry.insert(0, str(value))
-    entry.grid(row=row, column=1, padx=5, pady=5)
-    entries[key] = entry
-    row += 1
+        # OK and Cancel buttons.
+        button_box = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        button_box.accepted.connect(self.on_ok)
+        button_box.rejected.connect(self.reject)
 
-def on_ok():
-    # Update the original config_data using the entries.
-    for key, entry in entries.items():
-        keys = key.split(".")
-        current = config_data
-        for subkey in keys[:-1]:
-            current = current[subkey]
-        # Update only the leaf value.
-        current[keys[-1]] = entry.get()
+        # Set the main layout.
+        main_layout = QtWidgets.QVBoxLayout()
+        main_layout.addLayout(self.grid_layout)
+        main_layout.addWidget(button_box)
+        self.setLayout(main_layout)
+
+    def on_ok(self):
+        # Update the config_data with the new values.
+        for key, line_edit in self.edit_fields.items():
+            new_value = line_edit.text()
+            keys = key.split(".")
+            current = self.config_data
+            for subkey in keys[:-1]:
+                current = current[subkey]
+            current[keys[-1]] = new_value
+        try:
+            with open(self.config_file, 'w') as f:
+                yaml.dump(self.config_data, f)
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Error writing YAML:\n{e}")
+            return
+        self.accept()
+
+def main():
+    # Determine the config file location.
+    if len(sys.argv) > 1:
+        config_file = sys.argv[1]
+    else:
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        config_file = os.path.join(script_dir, "config", "params.yaml")
+    
+    if not os.path.exists(config_file):
+        QtWidgets.QMessageBox.critical(None, "Error", f"Config file not found:\n{config_file}")
+        sys.exit(1)
+    
     try:
-        with open(config_file, 'w') as f:
-            yaml.dump(config_data, f)
-        editor.destroy()
+        with open(config_file, 'r') as f:
+            config_data = yaml.safe_load(f)
     except Exception as e:
-        messagebox.showerror("Error", f"Error writing YAML:\n{e}")
+        QtWidgets.QMessageBox.critical(None, "Error", f"Error reading YAML:\n{e}")
+        sys.exit(1)
 
-def on_cancel():
-    if messagebox.askokcancel("Cancel", "Cancel without saving changes?"):
-        editor.destroy()
+    app = QtWidgets.QApplication(sys.argv)
+    dialog = EditParametersDialog(config_file, config_data)
+    if dialog.exec_() == QtWidgets.QDialog.Accepted:
+        sys.exit(0)
+    else:
+        sys.exit(1)
 
-# Buttons for OK and Cancel.
-button_frame = tk.Frame(editor)
-button_frame.grid(row=row, column=0, columnspan=2, pady=10)
-ok_btn = tk.Button(button_frame, text="OK", command=on_ok)
-ok_btn.pack(side="left", padx=5)
-cancel_btn = tk.Button(button_frame, text="Cancel", command=on_cancel)
-cancel_btn.pack(side="left", padx=5)
-
-editor.mainloop()
+if __name__ == "__main__":
+    main()
