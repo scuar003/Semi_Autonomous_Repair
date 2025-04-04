@@ -1,8 +1,7 @@
-from backend.controllers import node_controller, log_controller, network_controller, home_controller
+from backend.controllers import node_controller, log_controller, network_controller
 
 def register_routes(app):
-    # Home page route (no URL prefix so it serves as the root)
-    app.register_blueprint(home_controller.home_bp)
+
     # Node control endpoints
     app.register_blueprint(node_controller.node_bp, url_prefix='/api/nodes')
     # Log endpoints
