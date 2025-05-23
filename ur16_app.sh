@@ -34,4 +34,4 @@ fi
 echo "Using parameter file: $PARAM_FILE"
 
 # Launch the ROS2 system by passing the parameter file as a launch argument.
-terminator -e "ros2 launch demo_cpp_ready ur16_launch.py params_file:=$PARAM_FILE"
+terminator -e "ros2 launch ur16_repair ur16_repair.launch.py params_file:=$PARAM_FILE"

@@ -39,14 +39,10 @@ repositories:
     type: git
     url: https://github.com/ros-controls/realtime_tools.git
     version: humble
-  RepairInterface:
+  ARC_RepairPlatform:
     type: git
-    url: https://github.com/scuar003/RepairInterface.git
-    version: devel
-  cloud_devel:
-    type: git
-    url: https://github.com/scuar003/cloud_devel.git
-    version: devel
+    url: https://github.com/scuar003/ARC_RepairPlatform.git
+    version: main
   rmw_zenoh:
     type: git
     url: https://github.com/ros2/rmw_zenoh.git
